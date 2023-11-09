@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useInitNear, Widget, EthersProviderContext } from 'near-social-vm';
 
 import { useWallet } from '../wallets/wallet-selector';
@@ -15,10 +15,16 @@ export default function Component({ src, props }) {
     initNear && selector && initNear({ networkId: NetworkId, selector });
   }, [initNear, selector]);
 
+  console.log('VMCOMP RENDER', src, props)
+
+  const widget = useMemo(() => {
+    return <Widget src={src} props={props} />
+  }, []);
+
   return (
     <div>
       <EthersProviderContext.Provider value={ethersContext}>
-        <Widget src={src} props={props} />
+        {widget}
       </EthersProviderContext.Provider>
     </div>
   );

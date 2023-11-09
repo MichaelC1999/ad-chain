@@ -17,7 +17,7 @@ export function NetworkSwitcher() {
             // Prompt user to switch to Sepolia
             await windowOverride?.ethereum?.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0xaa36a7' }],
+                params: [{ chainId: '0x4e454153' }],
             });
         } catch (switchError) {
             setErrorMessage(switchError.message);
@@ -25,7 +25,7 @@ export function NetworkSwitcher() {
     }
 
     if (isEthereumAvailable) {
-        if (windowOverride?.ethereum?.networkVersion == "11155111") {
+        if (windowOverride?.ethereum?.networkVersion == "1313161555") {
             // This component renders on all pages. If the network is Sepolia, render nothing
             return null;
         }
@@ -43,7 +43,7 @@ export function NetworkSwitcher() {
                 <DialogContent>
                     <Box display="flex" flexDirection="column" alignItems="center" >
                         <Typography variant="body1">
-                            This dApp is deployed on Sepolia (Chain ID 11155111)
+                            This dApp is deployed on Aurora Testnet (Chain ID 1313161555)
                         </Typography>
                         <Typography variant="body1">
                             You are currently connected to Chain ID {windowOverride?.ethereum?.networkVersion || "N/A"}
@@ -56,7 +56,7 @@ export function NetworkSwitcher() {
                                     color="primary"
                                     onClick={() => switchNetwork()}
                                 >
-                                    Switch to Sepolia
+                                    Switch to Aurora Testnet
                                 </Button>
                             </Box>
                         )}

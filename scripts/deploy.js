@@ -8,24 +8,23 @@ const hre = require("hardhat");
 
 async function main() {
 
-  // const man = await hre.ethers.deployContract("Manager", [], {});
+  const man = await hre.ethers.deployContract("Manager", [], {});
 
-  // await man.waitForDeployment();
+  await man.waitForDeployment();
 
-  // const Manager = await hre.ethers.getContractAt("Manager", man.target)
+  const Manager = await hre.ethers.getContractAt("Manager", man.target)
 
 
-  // const campaignNFT = await Manager.campaignNFT()
-  // console.log("Manager: " + man.target, "campaign", campaignNFT)
+  const campaignNFT = await Manager.campaignNFT()
+  console.log("Manager: " + man.target, "campaign", campaignNFT)
 
-  const Campaign = await hre.ethers.getContractAt("CampaignNFT", "0x8143CF92c13243c819a0D541c1f7Aff7A359eD7F")
+  const Campaign = await hre.ethers.getContractAt("CampaignNFT", campaignNFT)
   // const Campaign = await hre.ethers.getContractAt("CampaignNFT", "0xe73bc5BD4763A3307AB5F8F126634b7E12E3dA9b")
 
   await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/CTfWg2A.jpg")
-  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/CTfWg2A.jpg")
-  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/CTfWg2A.jpg")
-  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/CTfWg2A.jpg")
-  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/CTfWg2A.jpg")
+  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://i.imgur.com/9M42oPt.png")
+  await Campaign.safeMint("0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E", "https://public.bnbstatic.com/image/pgc/202307/6af3e0d5eb5f701eb443089a63d004f4.jpg")
+
   console.log(await Campaign.tokenCount())
 
 

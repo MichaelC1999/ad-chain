@@ -2,8 +2,30 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Button, CircularProgress, IconButton, InputAdornment, TextField, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import dynamic from 'next/dynamic';
+import { ethers, formatEther, formatUnits, parseEther, solidityPackedKeccak256 } from 'ethers';
 
 const Component = dynamic(() => import('../../../components/vm-component'), { ssr: false });
+
+const managerABI = [
+    {
+        "inputs": [],
+        "name": "getRandomCampaignNFT",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
 
 const Mint = ({ setErrorMessage, setNewMintTx }) => {
     const transactionMiddlewareComponentSrc = "manztech.testnet/widget/transactionMiddleware"
@@ -11,7 +33,7 @@ const Mint = ({ setErrorMessage, setNewMintTx }) => {
     const windowOverride = typeof window !== 'undefined' ? window : null;
     const lotusDaoAddress = process.env.NEXT_PUBLIC_LOTUS_ADDRESS || "";
 
-    const [totalSupply, setTotalSupply] = useState(0);
+    const [currentCampaignId, setCurrentCampaign] = useState(0);
     const [lotusAmount, setLotusAmount] = useState('');
     const [buyInputError, setBuyInputError] = useState(false);
     const [buyInitialized, setBuyInitialized] = useState(false);
@@ -19,8 +41,9 @@ const Mint = ({ setErrorMessage, setNewMintTx }) => {
     const [isEthereumAvailable, setIsEthereumAvailable] = useState(false);
     const classes = useStyles();
 
+
     useEffect(() => {
-        fetchLotusTotalSupply();
+        getCurrentCampaign();
         if (typeof window !== 'undefined' && 'ethereum' in window) {
             setIsEthereumAvailable(true);
         }
@@ -29,32 +52,31 @@ const Mint = ({ setErrorMessage, setNewMintTx }) => {
     useEffect(() => {
         // Buy flow starts with clearing input errors detected on last buy attempt
         if (buyInitialized) {
-            setBuyInputError(false);
             handleBuy();
         }
         return () => clearTimeout(handleBuy);
 
     }, [buyInitialized])
 
-    const price = useMemo(() => computeLotusPrice(totalSupply), [totalSupply]);
-    // const provider = useMemo(() => {
-    //     return new ethers.BrowserProvider(windowOverride?.ethereum);
-    // }, [windowOverride]);
+
+    const price = 1;
+    const provider = useMemo(() => {
+        return new ethers.BrowserProvider(windowOverride?.ethereum);
+    }, [windowOverride]);
 
 
-    // const readPinkLotusContract = new ethers.Contract(lotusDaoAddress, abi, provider);
+    const readManager = new ethers.Contract("0xEE4b327474Fc66EeFeb0108Cb34EF77a335802d2", managerABI, provider);
 
-    const fetchLotusTotalSupply = async () => {
-        // Get the LOTUS ERC20 total supply if provider is currently on Sepolia
-        // try {
-        //     if (windowOverride?.ethereum?.networkVersion !== "11155111") {
-        //         return setTotalSupply(0);
-        //     }
-        //     const supply = await readPinkLotusContract.totalSupply();
-        //     return setTotalSupply(supply);
-        // } catch (err) {
-        //     return setErrorMessage(err?.info?.error?.message ?? err?.message);
-        // }
+    const getCurrentCampaign = async () => {
+        try {
+            if (windowOverride?.ethereum?.networkVersion !== "11155111") {
+                return setCurrentCampaign(0);
+            }
+            const supply = await readManager.getRandomCampaignNFT();
+            return setCurrentCampaign(supply);
+        } catch (err) {
+            return setErrorMessage(err?.info?.error?.message ?? err?.message);
+        }
     }
 
     function computeLotusPrice(totalSupply) {
@@ -177,6 +199,9 @@ const Mint = ({ setErrorMessage, setNewMintTx }) => {
         return <></>;
     }
 
+    const transactionComp = <Component src={transactionMiddlewareComponentSrc} props={{ currentCampaignId: currentCampaignId, managerAddress: "0x1c943207bF4Ae4098Fb21cc95Dae17C33Ae347b7", target: "0x1c943207bF4Ae4098Fb21cc95Dae17C33Ae347b7" }} />
+
+
     return (
         <div className={classes.mint}>
             <span className="sectionHeader">Amount of Lotus to Buy</span>
@@ -186,7 +211,7 @@ const Mint = ({ setErrorMessage, setNewMintTx }) => {
                 <span>Cost Per LOTUS ≈ 1 ETH</span>
             </div>
             {totalPurchaseInEth}
-            {buyInitialized ? <Component src={transactionMiddlewareComponentSrc} props={{ managerAddress: "0x7A5C4E6c39dD8C594Aca1De08A0733fe3c07B8C2", target: "0x7A5C4E6c39dD8C594Aca1De08A0733fe3c07B8C2" }} /> : null}
+            {buyInitialized ? transactionComp : null}
         </div>
     );
 };

@@ -2,18 +2,9 @@ const sender = Ethers.send("eth_requestAccounts", [])[0];
 
 if (!sender) return <Web3Connect connectLabel="Connect with Web3" />;
 
-State.init({
-    executed: false,
-});
-
 const managerABI = [
     {
         "inputs": [
-            {
-                "internalType": "address",
-                "name": "txTarget",
-                "type": "address"
-            },
             {
                 "internalType": "uint256[]",
                 "name": "campaignsTokenIds",
@@ -23,26 +14,10 @@ const managerABI = [
                 "internalType": "uint256[]",
                 "name": "campaignsViewedCounters",
                 "type": "uint256[]"
-            },
-            {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-            },
-            {
-                "internalType": "bytes",
-                "name": "functionData",
-                "type": "bytes"
             }
         ],
-        "name": "executionMiddleware",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "",
-                "type": "bytes"
-            }
-        ],
+        "name": "handleAdViews",
+        "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     }
@@ -61,17 +36,22 @@ const managerABI = [
 // 
 const managerIface = new ethers.utils.Interface(managerABI);
 
+const signer = () => {
+    try {
+        return Ethers.provider().getSigner().signMessage("7825c79ae81318ad996441e00defd508c90912dd40060ad6a79259e717d3d426")
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 const execution = () => {
     console.log(props)
     try {
-
         // const encoded = managerIface.encodeFunctionData("executionMiddleware", [props.target, [campaignIds], [campaignCounts], (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32)), (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32))]);
-        // console.log('ADDRESSES', props.target, props.managerAddress, encoded)
         const currentViewCounter = Storage.get("viewCounter")
 
         console.log(currentViewCounter, 'storage')
-        let campaignIds = [1]
+        let campaignIds = [props.currentCampaignId]
         let campaignCounts = [1]
         if (currentViewCounter) {
             campaignIds = Object.keys(currentViewCounter).map(x => Number(x))
@@ -84,29 +64,15 @@ const execution = () => {
             Ethers.provider().getSigner()
         );
 
-        console.log('TEST VALS', props.target,
+        return managerContract.handleAdViews(
             campaignIds,
             campaignCounts,
-            (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32)),
-            (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32)),
-        )
-
-        return managerContract.executionMiddleware(
-            props.target,
-            campaignIds,
-            campaignCounts,
-            (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32)),
-            (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(0)), 32)),
             {}
         ).then(returnData => {
             const decoded = managerIface.decodeFunctionResult(
-                "executionMiddleware",
+                "handleAdViews",
                 returnData
             );
-            console.log('RETURN VALUE FROM EXECUTE ROUTING:', decoded)
-            State.update({
-                executed: true
-            })
             return decoded[0];
         })
     } catch (error) {
@@ -122,9 +88,10 @@ const execution = () => {
 // The transactions must be routed through the manager contract
 // Upon tx success, set state.viewCounter: {}
 
-if (!state.executed) {
+
+signer().then(signed => {
     execution()
-}
+})
 
 
 return (

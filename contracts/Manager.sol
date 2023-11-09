@@ -17,6 +17,8 @@ contract Manager {
 
     mapping(uint => uint) public campaignViewCounter;
 
+    mapping(address => uint) public userNonce;
+
     struct GatewayInfo {
         string url;
         address protocolAddress;
@@ -58,9 +60,28 @@ contract Manager {
         CampaignNFT campaignContract = CampaignNFT(campaignNFT);
         uint tokenCount = campaignContract.tokenCount();
         uint256 randomSeed = uint256(
-            keccak256(abi.encodePacked(msg.sender, incrementingCounter))
+            keccak256(
+                abi.encodePacked(
+                    msg.sender,
+                    incrementingCounter,
+                    userNonce[msg.sender]
+                )
+            )
         ) % tokenCount;
         return (randomSeed, campaignNFT);
+    }
+
+    function handleAdViews(
+        uint256[] memory campaignsTokenIds,
+        uint256[] memory campaignsViewedCounters
+    ) public {
+        userNonce[msg.sender] += 1;
+        for (uint256 i = 0; i < campaignsTokenIds.length; i++) {
+            uint256 campaignId = campaignsTokenIds[i];
+            uint256 counter = campaignsViewedCounters[i];
+
+            campaignViewCounter[campaignId] += counter;
+        }
     }
 
     function executionMiddleware(
@@ -73,17 +94,11 @@ contract Manager {
         // This is to be called in the middle of the external protocol function execution
 
         // Update campaign spend based on adViewData
+        userNonce[msg.sender] += 1;
         require(
             campaignsTokenIds.length == campaignsViewedCounters.length,
             "Input arrays must have the same length"
         );
-
-        for (uint256 i = 0; i < campaignsTokenIds.length; i++) {
-            uint256 campaignId = campaignsTokenIds[i];
-            uint256 counter = campaignsViewedCounters[i];
-
-            campaignViewCounter[campaignId] += counter;
-        }
 
         incrementingCounter++;
         (bool success, bytes memory data) = txTarget.call(

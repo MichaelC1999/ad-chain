@@ -1,4 +1,3 @@
-console.log('REACHED THE BOS COMP')
 if (!props.managerAddress) return null;
 const sender = Ethers.send("eth_requestAccounts", [])[0];
 
@@ -66,12 +65,10 @@ const fetchAdCampaign = () => {
         data: getCampaignSignature,
       })
       .then((campaignId) => {
-        console.log('Returned campaign data', campaignId)
         const decoded = managerIface.decodeFunctionResult(
           "getRandomCampaignNFT",
           campaignId
         );
-        console.log("SEPARATE CAMPAIGN CONTRACT", campaignId, decoded)
         State.update({
           campaignAddress: decoded[1]
         })
@@ -86,7 +83,6 @@ const fetchCampaignContent = (campaignNumber) => {
   try {
 
     const contentFunctionSignature = "0xc87b56dd" + (ethers.utils.hexZeroPad(ethers.utils.hexlify(Number(campaignNumber)), 32)).slice(2, 66)
-    console.log(contentFunctionSignature, state.campaignAddress, 'func')
 
     // fetch to tokenURI passing in the token campaign number
     if (!state.campaignAddress) return null
@@ -121,14 +117,12 @@ if (!state.contentURI) {
       const viewCounterObj = {
         [campaignId]: counter
       }
-      console.log('setting: ', viewCounterObj)
       Storage.set("viewCounter", viewCounterObj)
     })
   });
 }
 
 // Return displays the image element, with props for styling
-console.log('RENDERING: ', state.contentURI)
 
 return (
   <>

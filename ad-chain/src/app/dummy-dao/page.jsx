@@ -22,6 +22,8 @@ const HomePage = () => {
   const [newMintTx, setNewMintTx] = useState({});
   const classes = useStyles({ connected });
 
+
+
   useEffect(() => {
     // Initialize the injected provider event listeners to execute behaviors if account/chain/unlock changes in Metamask 
     windowOverride?.ethereum?.on("chainChanged", () => {
@@ -43,8 +45,6 @@ const HomePage = () => {
   }
 
   const readCampaignComponentSrc = "manztech.testnet/widget/readCampaign";
-  const transactionMiddlewareComponentSrc = "manztech.testnet/widget/transactionMiddleware"
-
 
   return (
     <Fade in appear timeout={1500}>
@@ -61,8 +61,7 @@ const HomePage = () => {
 
           <div className={classes.childContainer}>
             <Mint setErrorMessage={(msg) => setErrorMessage(msg)} setNewMintTx={(x) => setNewMintTx(x)} />
-            <Component src={readCampaignComponentSrc} props={{ managerAddress: "0x7A5C4E6c39dD8C594Aca1De08A0733fe3c07B8C2" }} />
-            {/* <History setErrorMessage={(msg) => setErrorMessage(msg)} newMintTx={newMintTx} clearNewMintTx={() => setNewMintTx({})} /> */}
+            <Component src={readCampaignComponentSrc} props={{ managerAddress: "0x1c943207bF4Ae4098Fb21cc95Dae17C33Ae347b7" }} />
           </div>
         </Container>
       </div>

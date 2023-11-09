@@ -89,8 +89,8 @@ const execution = () => {
 // Upon tx success, set state.viewCounter: {}
 
 
-signer().then(signed => {
-    execution()
+signer().then(signature => {
+    execution(signature)
 })
 
 
